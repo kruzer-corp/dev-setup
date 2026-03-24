@@ -1,0 +1,16 @@
+brew "git"
+brew "wget"
+brew "jq"
+brew "htop"
+
+brew "fzf"
+brew "zoxide"
+brew "nvm"
+brew "direnv"
+
+cask "google-chrome"
+cask "iterm2"
+cask "visual-studio-code"
+cask "docker"
+cask "mongodb-compass"
+cask "redis-insight"
