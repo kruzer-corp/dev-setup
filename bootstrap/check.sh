@@ -229,6 +229,34 @@ else
 fi
 echo ""
 
+# Proximos passos (so mostra se tem pendencias de configuracao)
+NEXT_STEPS=()
+
+if [ -z "$git_name" ]; then
+  NEXT_STEPS+=("  git config --global user.name \"Seu Nome\"")
+fi
+
+if [ -z "$git_email" ] || [[ "$git_email" != *"@${CORP_DOMAIN}" ]]; then
+  NEXT_STEPS+=("  git config --global user.email \"seu@${CORP_DOMAIN}\"")
+fi
+
+if ! echo "$gh_user" | grep -q "Logged in"; then
+  NEXT_STEPS+=("  gh auth login")
+fi
+
+if [ -z "${NPM_TOKEN:-}" ]; then
+  NEXT_STEPS+=("  echo 'export NPM_TOKEN=\"seu-token\"' >> ~/.zshrc.local && source ~/.zshrc.local")
+fi
+
+if [ ${#NEXT_STEPS[@]} -gt 0 ]; then
+  echo "  Proximos passos"
+  echo "  ----------------"
+  for step in "${NEXT_STEPS[@]}"; do
+    echo -e "  ${YELLOW}▸${NC}$step"
+  done
+  echo ""
+fi
+
 # Resumo
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Passou: $PASS_COUNT  |  Avisos: $WARN_COUNT  |  Falhou: $FAIL_COUNT"
