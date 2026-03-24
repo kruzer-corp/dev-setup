@@ -129,7 +129,6 @@ else
   # tenta node global como fallback
   check_cmd "node" "node" "node --version"
 fi
-check_cmd "Claude Code" "claude" "claude --version"
 echo ""
 
 # Aplicacoes (essenciais)
@@ -137,6 +136,8 @@ echo "  Aplicacoes"
 echo "  ----------"
 check_app "iTerm2"          "/Applications/iTerm.app"
 check_app "Slack"           "/Applications/Slack.app"
+check_app "Claude Desktop"  "/Applications/Claude.app"
+check_app "Claude Code"     "/Applications/Claude Code.app"
 check_cmd "VS Code"  "code" "code --version"
 check_cmd "Docker"   "docker" "docker --version"
 echo ""

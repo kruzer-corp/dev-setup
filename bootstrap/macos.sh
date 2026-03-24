@@ -121,25 +121,7 @@ setup_nvm() {
   fi
 }
 
-# ─── Etapa 8: Claude Code ─────────────────────────────────────────────────────
-
-install_claude_code() {
-  if command -v claude >/dev/null 2>&1; then
-    log_success "Claude Code ja instalado ($(claude --version 2>/dev/null))"
-    return 0
-  fi
-
-  if ! command -v npm >/dev/null 2>&1; then
-    log_warn "npm nao disponivel - instale Node primeiro e execute: npm install -g @anthropic-ai/claude-code"
-    return 0
-  fi
-
-  log_info "Instalando Claude Code..."
-  npm install -g @anthropic-ai/claude-code
-  log_success "Claude Code instalado"
-}
-
-# ─── Etapa 9: Apps opcionais (prompt interativo) ──────────────────────────────
+# ─── Etapa 8: Apps opcionais (prompt interativo) ──────────────────────────────
 
 OPTIONAL_APPS=(
   "google-chrome:Google Chrome:Navegador web"
@@ -199,5 +181,4 @@ run_step "Oh My Zsh" install_ohmyzsh
 run_step "Dotfiles" setup_dotfiles
 run_step "Docker" start_docker
 run_step "NVM + Node" setup_nvm
-run_step "Claude Code" install_claude_code
 run_step "Apps opcionais" install_optional_apps

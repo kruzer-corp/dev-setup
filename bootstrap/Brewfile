@@ -18,6 +18,8 @@ cask "iterm2"
 cask "visual-studio-code"
 cask "docker"
 cask "slack"
+cask "claude"
+cask "claude-code"
 
 # ─── Aplicacoes (opcionais - instaladas via prompt interativo) ────────────────
 # google-chrome

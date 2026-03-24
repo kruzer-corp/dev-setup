@@ -50,3 +50,7 @@ if type nvm >/dev/null 2>&1; then
   add-zsh-hook chpwd load-nvmrc
   load-nvmrc
 fi
+
+# Customizacoes pessoais (nao versionado)
+# Crie ~/.zshrc.local para aliases, PATHs ou configs pessoais
+[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
