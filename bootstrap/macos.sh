@@ -44,7 +44,7 @@ install_homebrew() {
 
 install_packages() {
   log_info "Instalando pacotes via Brewfile..."
-  brew bundle --file="$SCRIPT_DIR/Brewfile" --no-lock
+  brew bundle --file="$SCRIPT_DIR/Brewfile"
 }
 
 # ─── Etapa 4: Dotfiles ────────────────────────────────────────────────────────
