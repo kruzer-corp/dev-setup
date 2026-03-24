@@ -23,15 +23,19 @@ install_xcode_tools() {
 # ─── Etapa 2: Homebrew ────────────────────────────────────────────────────────
 
 install_homebrew() {
-  if ! command -v brew >/dev/null 2>&1; then
+  # Checa o binario direto em vez de PATH (pode nao estar no PATH em sessao limpa)
+  if [ ! -f "/opt/homebrew/bin/brew" ] && [ ! -f "/usr/local/bin/brew" ]; then
     log_info "Instalando Homebrew (pode pedir senha de admin)..."
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-    # Adiciona ao PATH para a sessao atual (Apple Silicon)
-    if [ -f "/opt/homebrew/bin/brew" ]; then
-      eval "$(/opt/homebrew/bin/brew shellenv)"
-    fi
   fi
+
+  # Garante brew no PATH para esta sessao
+  if [ -f "/opt/homebrew/bin/brew" ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [ -f "/usr/local/bin/brew" ]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  fi
+
   log_success "Homebrew $(brew --version | head -1)"
   brew update
 }
