@@ -47,7 +47,20 @@ install_packages() {
   brew bundle --file="$SCRIPT_DIR/Brewfile"
 }
 
-# ─── Etapa 4: Dotfiles ────────────────────────────────────────────────────────
+# ─── Etapa 4: Oh My Zsh ────────────────────────────────────────────────────────
+
+install_ohmyzsh() {
+  if [ -d "$HOME/.oh-my-zsh" ]; then
+    log_success "Oh My Zsh ja instalado"
+    return 0
+  fi
+
+  log_info "Instalando Oh My Zsh..."
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+  log_success "Oh My Zsh instalado"
+}
+
+# ─── Etapa 5: Dotfiles ────────────────────────────────────────────────────────
 
 setup_dotfiles() {
   local ZSHRC="$HOME/.zshrc"
@@ -164,6 +177,7 @@ if [ -f "/opt/homebrew/bin/brew" ]; then
 fi
 
 run_step "Pacotes (Brewfile)" install_packages
+run_step "Oh My Zsh" install_ohmyzsh
 run_step "Dotfiles" setup_dotfiles
 run_step "Docker" start_docker
 run_step "NVM + Node" setup_nvm
