@@ -1,16 +1,25 @@
-brew "git"
-brew "wget"
-brew "jq"
-brew "htop"
+# Brewfile - Fonte unica de verdade para pacotes do dev-setup
+# Mantenha este arquivo atualizado. O macos.sh usa `brew bundle` para instalar.
 
+# ─── CLI Tools ─────────────────────────────────────────────────────────────────
+
+brew "git"
+brew "gh"
+brew "jq"
 brew "fzf"
+brew "eza"
 brew "zoxide"
 brew "nvm"
 brew "direnv"
 
-cask "google-chrome"
+# ─── Aplicacoes (essenciais) ──────────────────────────────────────────────────
+
 cask "iterm2"
 cask "visual-studio-code"
 cask "docker"
-cask "mongodb-compass"
-cask "redis-insight"
+
+# ─── Aplicacoes (opcionais - instaladas via prompt interativo) ────────────────
+# google-chrome
+# mongodb-compass
+# redis-insight
+# postman

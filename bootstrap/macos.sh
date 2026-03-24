@@ -1,24 +1,159 @@
 #!/bin/bash
-set -e
+# bootstrap/macos.sh - Setup completo para macOS
+# Instala ferramentas via Homebrew, configura dotfiles e valida o ambiente.
 
-echo "🔧 Installing Homebrew..."
-if ! command -v brew &> /dev/null; then
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-fi
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+DEVSETUP_DIR="${DEVSETUP_DIR:-$HOME/.dev-setup}"
 
-echo "📦 Installing packages..."
-brew bundle --file=bootstrap/Brewfile
+source "$DEVSETUP_DIR/lib/common.sh"
+require_macos
 
-echo "⚙️ Installing Xcode CLI tools..."
-xcode-select --install || true
+# ─── Etapa 1: Xcode CLI Tools ─────────────────────────────────────────────────
 
-echo "📁 Setting up dotfiles..."
-mkdir -p ~/dotfiles
-cp -r dotfiles/* ~/dotfiles/
+install_xcode_tools() {
+  if ! xcode-select -p >/dev/null 2>&1; then
+    log_info "Instalando Xcode CLI tools (pode pedir senha de admin)..."
+    xcode-select --install 2>/dev/null || true
+    log_warn "Aguarde a instalacao do Xcode CLI tools e re-execute o script"
+    exit 1
+  fi
+  log_success "Xcode CLI tools ja instalado"
+}
 
-ln -sf ~/dotfiles/zsh/.zshrc ~/.zshrc
+# ─── Etapa 2: Homebrew ────────────────────────────────────────────────────────
 
-echo "🐳 Starting Docker..."
-open -a Docker || true
+install_homebrew() {
+  if ! command -v brew >/dev/null 2>&1; then
+    log_info "Instalando Homebrew (pode pedir senha de admin)..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-echo "✅ Setup completed!"
+    # Adiciona ao PATH para a sessao atual (Apple Silicon)
+    if [ -f "/opt/homebrew/bin/brew" ]; then
+      eval "$(/opt/homebrew/bin/brew shellenv)"
+    fi
+  fi
+  log_success "Homebrew $(brew --version | head -1)"
+  brew update
+}
+
+# ─── Etapa 3: Pacotes via Brewfile ─────────────────────────────────────────────
+
+install_packages() {
+  log_info "Instalando pacotes via Brewfile..."
+  brew bundle --file="$SCRIPT_DIR/Brewfile" --no-lock
+}
+
+# ─── Etapa 4: Dotfiles ────────────────────────────────────────────────────────
+
+setup_dotfiles() {
+  local ZSHRC="$HOME/.zshrc"
+  local TARGET="$DEVSETUP_DIR/dotfiles/zsh/.zshrc"
+
+  if [ ! -f "$TARGET" ]; then
+    log_error "Arquivo .zshrc nao encontrado em $TARGET"
+    return 1
+  fi
+
+  # Backup com timestamp (nunca perde o original)
+  if [ -f "$ZSHRC" ] && [ ! -L "$ZSHRC" ]; then
+    local backup="$ZSHRC.backup.$(date +%Y%m%d%H%M%S)"
+    mv "$ZSHRC" "$backup"
+    log_info "Backup do .zshrc criado em $backup"
+  fi
+
+  ln -sf "$TARGET" "$ZSHRC"
+  log_success "Dotfiles configurados (.zshrc -> $TARGET)"
+}
+
+# ─── Etapa 5: Docker ──────────────────────────────────────────────────────────
+
+start_docker() {
+  if ! command -v docker >/dev/null 2>&1; then
+    log_warn "Docker nao encontrado - pulando"
+    return 0
+  fi
+
+  if ! docker info >/dev/null 2>&1; then
+    log_info "Iniciando Docker Desktop..."
+    open -a Docker || true
+    log_warn "Aguarde o Docker iniciar completamente"
+  else
+    log_success "Docker daemon rodando"
+  fi
+}
+
+# ─── Etapa 6: NVM + Node ──────────────────────────────────────────────────────
+
+setup_nvm() {
+  export NVM_DIR="$HOME/.nvm"
+  mkdir -p "$NVM_DIR"
+
+  # Carrega nvm para a sessao atual
+  local NVM_SH="/opt/homebrew/opt/nvm/nvm.sh"
+  if [ -s "$NVM_SH" ]; then
+    source "$NVM_SH"
+  fi
+
+  if command -v nvm >/dev/null 2>&1; then
+    log_info "Instalando Node LTS via nvm..."
+    nvm install --lts
+    nvm alias default lts/*
+    log_success "Node $(node --version) instalado"
+  else
+    log_warn "nvm nao encontrado. Reinicie o terminal e execute: nvm install --lts"
+  fi
+}
+
+# ─── Etapa 7: Apps opcionais (prompt interativo) ──────────────────────────────
+
+OPTIONAL_APPS=(
+  "google-chrome:Google Chrome:Navegador web"
+  "mongodb-compass:MongoDB Compass:GUI para gerenciar bancos MongoDB"
+  "redis-insight:Redis Insight:GUI para gerenciar instancias Redis"
+  "postman:Postman:Teste e documentacao de APIs"
+)
+
+install_optional_apps() {
+  log_info "Apps opcionais disponiveis:"
+  echo ""
+
+  local to_install=()
+
+  for entry in "${OPTIONAL_APPS[@]}"; do
+    local cask="${entry%%:*}"
+    local rest="${entry#*:}"
+    local name="${rest%%:*}"
+    local desc="${rest#*:}"
+
+    # Pula se ja esta instalado
+    if brew list --cask "$cask" >/dev/null 2>&1; then
+      log_success "$name ja instalado"
+      continue
+    fi
+
+    printf "  Instalar %s (%s)? [s/N] " "$name" "$desc"
+    read -r answer </dev/tty
+    if [[ "$answer" =~ ^[sS]$ ]]; then
+      to_install+=("$cask")
+    fi
+  done
+
+  if [ ${#to_install[@]} -gt 0 ]; then
+    for cask in "${to_install[@]}"; do
+      log_info "Instalando $cask..."
+      brew install --cask "$cask"
+    done
+  else
+    log_info "Nenhum app opcional selecionado"
+  fi
+}
+
+# ─── Execucao ──────────────────────────────────────────────────────────────────
+
+run_step "Xcode CLI Tools" install_xcode_tools
+run_step "Homebrew" install_homebrew
+run_step "Pacotes (Brewfile)" install_packages
+run_step "Dotfiles" setup_dotfiles
+run_step "Docker" start_docker
+run_step "NVM + Node" setup_nvm
+run_step "Apps opcionais" install_optional_apps

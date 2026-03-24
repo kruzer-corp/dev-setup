@@ -1,26 +1,52 @@
 #!/bin/bash
+# install.sh - Entrypoint remoto do dev-setup
+# Uso: curl -fsSL https://raw.githubusercontent.com/kruzer-corp/dev-setup/main/install.sh | bash
+# Uso com versao: DEVSETUP_VERSION=1.2.0 curl -fsSL ... | bash
 
-set -e
+set -euo pipefail
 
-REPO_ZIP_URL="https://github.com/kruzer-corp/dev-setup/archive/refs/heads/main.zip"
-TARGET_DIR="$HOME/.dev-setup"
+REPO="https://github.com/kruzer-corp/dev-setup"
+DEST="$HOME/.dev-setup"
+VERSION="${DEVSETUP_VERSION:-latest}"
 
-echo "📦 Downloading dev-setup..."
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Dev Setup - Kruzer"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
 
-TMP_ZIP="/tmp/dev-setup.zip"
+# Determina URL de download baseado na versao
+if [ "$VERSION" = "latest" ]; then
+  DOWNLOAD_URL="$REPO/archive/refs/heads/main.tar.gz"
+  echo "Versao: latest (main)"
+else
+  DOWNLOAD_URL="$REPO/archive/refs/tags/v${VERSION}.tar.gz"
+  echo "Versao: $VERSION"
+fi
 
-curl -L "$REPO_ZIP_URL" -o "$TMP_ZIP"
+echo "Destino: $DEST"
+echo ""
 
-echo "📂 Extracting..."
+# Backup se ja existe
+if [ -d "$DEST" ]; then
+  BACKUP="$DEST.backup.$(date +%Y%m%d%H%M%S)"
+  echo "Backup do setup anterior em $BACKUP"
+  mv "$DEST" "$BACKUP"
+fi
 
-rm -rf "$TARGET_DIR"
-mkdir -p "$TARGET_DIR"
+mkdir -p "$DEST"
 
-unzip -q "$TMP_ZIP" -d /tmp
+echo "Baixando dev-setup..."
+if ! curl -fsSL "$DOWNLOAD_URL" | tar -xz --strip-components=1 -C "$DEST"; then
+  echo "Erro ao baixar. Verifique a versao e tente novamente."
+  exit 1
+fi
 
-mv /tmp/dev-setup-main/* "$TARGET_DIR"
-
-cd "$TARGET_DIR"
-
-echo "🚀 Running setup..."
-bash bootstrap/install.sh
+echo ""
+echo "Instalado em $DEST"
+INSTALLED_VERSION="$(cat "$DEST/VERSION" 2>/dev/null || echo "unknown")"
+echo "Versao: $INSTALLED_VERSION"
+echo ""
+echo "Proximo passo:"
+echo "  cd $DEST && ./bootstrap/install.sh"
+echo ""
