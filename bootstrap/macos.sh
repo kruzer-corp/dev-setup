@@ -152,6 +152,13 @@ install_optional_apps() {
 
 run_step "Xcode CLI Tools" install_xcode_tools
 run_step "Homebrew" install_homebrew
+
+# Garante brew no PATH para todas as etapas seguintes
+# (necessario quando Homebrew acabou de ser instalado nesta sessao)
+if [ -f "/opt/homebrew/bin/brew" ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
 run_step "Pacotes (Brewfile)" install_packages
 run_step "Dotfiles" setup_dotfiles
 run_step "Docker" start_docker

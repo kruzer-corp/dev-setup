@@ -65,7 +65,7 @@ run_step() {
   log_info "Iniciando: ${name}..."
 
   local exit_code=0
-  "$@" 2>&1 | tee -a "$LOG_FILE" || exit_code=$?
+  "$@" > >(tee -a "$LOG_FILE") 2>&1 || exit_code=$?
 
   local end_time
   end_time=$(date +%s)
