@@ -100,15 +100,23 @@ echo ""
 # Runtime
 echo "  Runtime"
 echo "  -------"
-check_cmd "node"    "node"    "node --version"
 
-# nvm e uma funcao shell, nao binario - checa pelo diretorio e versoes instaladas
+# nvm e uma funcao shell - checa pelo diretorio
 NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 if [ -d "$NVM_DIR/versions/node" ] && [ "$(ls -A "$NVM_DIR/versions/node" 2>/dev/null)" ]; then
   nvm_versions="$(ls "$NVM_DIR/versions/node" | wc -l | tr -d ' ') versoes"
   echo -e "  ${GREEN}[OK]${NC}   nvm ($nvm_versions)"
   PASS_COUNT=$((PASS_COUNT + 1))
   JSON_ITEMS+=("{\"name\":\"nvm\",\"status\":\"ok\",\"version\":\"$nvm_versions\"}")
+
+  # node via nvm: busca o binario na versao default
+  default_node="$(ls -d "$NVM_DIR/versions/node/"* 2>/dev/null | sort -V | tail -1)"
+  if [ -n "$default_node" ] && [ -x "$default_node/bin/node" ]; then
+    node_ver="$("$default_node/bin/node" --version 2>/dev/null)"
+    echo -e "  ${GREEN}[OK]${NC}   node ($node_ver via nvm)"
+    PASS_COUNT=$((PASS_COUNT + 1))
+    JSON_ITEMS+=("{\"name\":\"node\",\"status\":\"ok\",\"version\":\"$node_ver\"}")
+  fi
 elif [ -d "$NVM_DIR" ] && [ -f "$NVM_DIR/nvm.sh" ]; then
   echo -e "  ${YELLOW}[WARN]${NC} nvm instalado mas sem versoes do Node"
   WARN_COUNT=$((WARN_COUNT + 1))
@@ -117,6 +125,9 @@ else
   echo -e "  ${RED}[FAIL]${NC} nvm nao encontrado"
   FAIL_COUNT=$((FAIL_COUNT + 1))
   JSON_ITEMS+=("{\"name\":\"nvm\",\"status\":\"fail\",\"version\":null}")
+
+  # tenta node global como fallback
+  check_cmd "node" "node" "node --version"
 fi
 echo ""
 
