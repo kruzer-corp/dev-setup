@@ -129,6 +129,7 @@ else
   # tenta node global como fallback
   check_cmd "node" "node" "node --version"
 fi
+check_cmd "Claude Code" "claude" "claude --version"
 echo ""
 
 # Aplicacoes (essenciais)
