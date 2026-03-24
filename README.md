@@ -35,6 +35,7 @@ DEVSETUP_VERSION=1.0.0 curl -fsSL https://raw.githubusercontent.com/kruzer-corp/
 | App | O que faz |
 |-----|-----------|
 | **iTerm2** | Terminal avancado para macOS |
+| **Slack** | Comunicacao do time |
 | **VS Code** | Editor de codigo padrao do time |
 | **Docker Desktop** | Containers para rodar servicos localmente |
 

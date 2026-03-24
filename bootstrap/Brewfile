@@ -17,6 +17,7 @@ brew "direnv"
 cask "iterm2"
 cask "visual-studio-code"
 cask "docker"
+cask "slack"
 
 # ─── Aplicacoes (opcionais - instaladas via prompt interativo) ────────────────
 # google-chrome
