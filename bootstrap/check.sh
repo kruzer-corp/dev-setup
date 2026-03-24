@@ -37,6 +37,35 @@ check_cmd() {
   fi
 }
 
+check_app() {
+  local name="$1"
+  local app_path="$2"
+
+  if [ -d "$app_path" ]; then
+    echo -e "  ${GREEN}[OK]${NC}   $name"
+    PASS_COUNT=$((PASS_COUNT + 1))
+    JSON_ITEMS+=("{\"name\":\"$name\",\"status\":\"ok\",\"version\":\"installed\"}")
+  else
+    echo -e "  ${RED}[FAIL]${NC} $name nao encontrado"
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+    JSON_ITEMS+=("{\"name\":\"$name\",\"status\":\"fail\",\"version\":null}")
+  fi
+}
+
+check_optional_app() {
+  local name="$1"
+  local app_path="$2"
+
+  if [ -d "$app_path" ]; then
+    echo -e "  ${GREEN}[OK]${NC}   $name"
+    PASS_COUNT=$((PASS_COUNT + 1))
+    JSON_ITEMS+=("{\"name\":\"$name\",\"status\":\"ok\",\"version\":\"installed\"}")
+  else
+    echo -e "  ${YELLOW}[ - ]${NC} $name (nao instalado)"
+    JSON_ITEMS+=("{\"name\":\"$name\",\"status\":\"skipped\",\"version\":null}")
+  fi
+}
+
 check_service() {
   local name="$1"
   local check_cmd="$2"
@@ -91,11 +120,21 @@ else
 fi
 echo ""
 
-# Aplicacoes
+# Aplicacoes (essenciais)
 echo "  Aplicacoes"
 echo "  ----------"
-check_cmd "VS Code" "code"    "code --version"
-check_cmd "Docker"  "docker"  "docker --version"
+check_app "iTerm2"          "/Applications/iTerm.app"
+check_cmd "VS Code"  "code" "code --version"
+check_cmd "Docker"   "docker" "docker --version"
+echo ""
+
+# Aplicacoes (opcionais)
+echo "  Aplicacoes (opcionais)"
+echo "  ----------------------"
+check_optional_app "Google Chrome"    "/Applications/Google Chrome.app"
+check_optional_app "MongoDB Compass"  "/Applications/MongoDB Compass.app"
+check_optional_app "Redis Insight"    "/Applications/Redis Insight.app"
+check_optional_app "Postman"          "/Applications/Postman.app"
 echo ""
 
 # Servicos
