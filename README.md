@@ -64,7 +64,7 @@ gh auth login
 
 ### NPM Token
 
-Necessario para pacotes privados. Adicione ao `~/.zshrc.local`:
+Necessario para pacotes privados. Solicite ao time de infra e adicione ao `~/.zshrc.local`:
 
 ```bash
 echo 'export NPM_TOKEN="seu-token"' >> ~/.zshrc.local
