@@ -138,6 +138,7 @@ check_app "iTerm2"          "/Applications/iTerm.app"
 check_app "Slack"           "/Applications/Slack.app"
 check_app "Claude Desktop"  "/Applications/Claude.app"
 check_cmd "Claude Code" "claude" "claude --version"
+check_app "OpenVPN Connect" "/Applications/OpenVPN Connect/OpenVPN Connect.app"
 check_cmd "VS Code"  "code" "code --version"
 check_cmd "Docker"   "docker" "docker --version"
 echo ""
@@ -246,6 +247,10 @@ fi
 
 if [ -z "${NPM_TOKEN:-}" ]; then
   NEXT_STEPS+=("  echo 'export NPM_TOKEN=\"seu-token\"' >> ~/.zshrc.local && source ~/.zshrc.local")
+fi
+
+if [ -d "/Applications/OpenVPN Connect/OpenVPN Connect.app" ] && ! ls ~/Library/Application\ Support/OpenVPN\ Connect/profiles/*.ovpn >/dev/null 2>&1; then
+  NEXT_STEPS+=("  Configurar VPN: abra OpenVPN Connect e importe o perfil .ovpn (solicite ao time de infra)")
 fi
 
 if [ ${#NEXT_STEPS[@]} -gt 0 ]; then
