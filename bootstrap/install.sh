@@ -20,20 +20,26 @@ echo "  Dev Setup v${DEVSETUP_VERSION}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-OS="$(uname)"
+OS="$(uname -s 2>/dev/null || uname)"
+os_lower=$(printf '%s' "$OS" | tr '[:upper:]' '[:lower:]')
 
-case "$OS" in
-  Darwin)
+case "$os_lower" in
+  darwin)
     log_info "macOS detectado"
     bash "$SCRIPT_DIR/macos.sh" || exit $?
     ;;
-  Linux)
+  linux)
     log_info "Linux detectado"
+    if [ ! -f "$SCRIPT_DIR/linux.sh" ]; then
+      log_error "Esta copia do dev-setup nao tem suporte a Linux (falta bootstrap/linux.sh)."
+      log_info "Voce esta numa versao antiga do repositorio. Atualize: git pull, ou rode o install.sh do GitHub na branch/main que inclui Linux."
+      exit 1
+    fi
     bash "$SCRIPT_DIR/linux.sh" || exit $?
     ;;
   *)
     log_error "Sistema nao suportado: $OS"
-    log_info "Atualmente macOS e Linux (Ubuntu/Debian) sao suportados."
+    log_info "Suportados: macOS (Darwin) e Linux (Ubuntu/Debian)."
     exit 1
     ;;
 esac

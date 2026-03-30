@@ -8,7 +8,7 @@ Setup automatizado para maquinas de desenvolvimento - Kruzer.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/kruzer-corp/dev-setup/main/install.sh | bash
-cd ~/.dev-setup && ./bootstrap/install.sh
+cd ~/.dev-setup && bash bootstrap/install.sh
 ```
 
 ### Linux (Ubuntu / Debian)
@@ -17,8 +17,10 @@ Requisitos: `sudo`, `curl`, `systemd` (Docker como servico), arquitetura suporta
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/kruzer-corp/dev-setup/main/install.sh | bash
-cd ~/.dev-setup && ./bootstrap/install.sh
+cd ~/.dev-setup && bash bootstrap/install.sh
 ```
+
+Se aparecer que **so macOS e suportado** ou **falta bootstrap/linux.sh**, o `main` no GitHub ainda nao tem a versao com Linux: faca **merge** dessa alteracao no repositorio, ou use um **clone local** / outra branch que ja inclua `bootstrap/linux.sh` e `bootstrap/linux-ubuntu.sh`.
 
 Outras distribuicoes: o script informa que ainda nao sao suportadas.
 
