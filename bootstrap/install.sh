@@ -20,20 +20,28 @@ OS="$(uname)"
 case "$OS" in
   Darwin)
     log_info "macOS detectado"
-    bash "$SCRIPT_DIR/macos.sh"
+    bash "$SCRIPT_DIR/macos.sh" || exit $?
+    ;;
+  Linux)
+    log_info "Linux detectado"
+    bash "$SCRIPT_DIR/linux.sh" || exit $?
     ;;
   *)
     log_error "Sistema nao suportado: $OS"
-    log_info "Atualmente apenas macOS e suportado."
+    log_info "Atualmente macOS e Linux (Ubuntu/Debian) sao suportados."
     exit 1
     ;;
 esac
 
 echo ""
 log_info "Validando instalacao..."
-bash "$SCRIPT_DIR/check.sh"
+if ! bash "$SCRIPT_DIR/check.sh"; then
+  echo ""
+  log_error "Validacao falhou. Veja o relatorio em: $LOG_DIR/check-result.json"
+  log_error "Log completo: $LOG_FILE"
+  exit 1
+fi
 
-# Resumo final (do macos.sh via common.sh)
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Setup finalizado!"

@@ -105,9 +105,15 @@ setup_nvm() {
   export NVM_DIR="$HOME/.nvm"
   mkdir -p "$NVM_DIR"
 
-  # Carrega nvm para a sessao atual
-  local NVM_SH="/opt/homebrew/opt/nvm/nvm.sh"
-  if [ -s "$NVM_SH" ]; then
+  # Carrega nvm para a sessao atual (Apple Silicon / Intel Homebrew)
+  local NVM_SH=""
+  if [ -s "/opt/homebrew/opt/nvm/nvm.sh" ]; then
+    NVM_SH="/opt/homebrew/opt/nvm/nvm.sh"
+  elif [ -s "/usr/local/opt/nvm/nvm.sh" ]; then
+    NVM_SH="/usr/local/opt/nvm/nvm.sh"
+  fi
+  if [ -n "$NVM_SH" ]; then
+    # shellcheck source=/dev/null
     source "$NVM_SH"
   fi
 
@@ -131,6 +137,26 @@ OPTIONAL_APPS=(
 )
 
 install_optional_apps() {
+  if [ "${DEVSETUP_NONINTERACTIVE:-0}" = "1" ]; then
+    if [ "${DEVSETUP_INSTALL_OPTIONAL:-0}" = "1" ]; then
+      log_info "Modo nao interativo: instalando todos os apps opcionais (DEVSETUP_INSTALL_OPTIONAL=1)..."
+      local to_install_all=()
+      for entry in "${OPTIONAL_APPS[@]}"; do
+        local cask_all="${entry%%:*}"
+        if ! brew list --cask "$cask_all" >/dev/null 2>&1; then
+          to_install_all+=("$cask_all")
+        fi
+      done
+      for cask in "${to_install_all[@]}"; do
+        log_info "Instalando $cask..."
+        brew install --cask "$cask"
+      done
+    else
+      log_info "Modo nao interativo: pulando apps opcionais (defina DEVSETUP_INSTALL_OPTIONAL=1 para instalar)"
+    fi
+    return 0
+  fi
+
   log_info "Apps opcionais disponiveis:"
   echo ""
 
@@ -182,3 +208,5 @@ run_step "Dotfiles" setup_dotfiles
 run_step "Docker" start_docker
 run_step "NVM + Node" setup_nvm
 run_step "Apps opcionais" install_optional_apps
+
+print_summary || exit 1

@@ -1,0 +1,19 @@
+# Pacotes apt base para dev-setup (espelho dos formulae do Brewfile, sem gh/code/docker)
+# Uma linha = um pacote. Linhas vazias e # sao ignoradas.
+
+git
+jq
+fzf
+direnv
+curl
+unzip
+ca-certificates
+gnupg
+lsb-release
+build-essential
+pkg-config
+libssl-dev
+zsh
+wget
+software-properties-common
+apt-transport-https

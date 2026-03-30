@@ -4,10 +4,30 @@ Setup automatizado para maquinas de desenvolvimento - Kruzer.
 
 ## Instalacao
 
+### macOS
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/kruzer-corp/dev-setup/main/install.sh | bash
 cd ~/.dev-setup && ./bootstrap/install.sh
 ```
+
+### Linux (Ubuntu / Debian)
+
+Requisitos: `sudo`, `curl`, `systemd` (Docker como servico), arquitetura suportada pelos repositorios oficiais (Docker, VS Code, GitHub CLI).
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/kruzer-corp/dev-setup/main/install.sh | bash
+cd ~/.dev-setup && ./bootstrap/install.sh
+```
+
+Outras distribuicoes: o script informa que ainda nao sao suportadas.
+
+### Variaveis de ambiente (macOS e Linux)
+
+| Variavel | Efeito |
+|----------|--------|
+| `DEVSETUP_NONINTERACTIVE=1` | Nao pergunta por apps opcionais; pula a menos que `DEVSETUP_INSTALL_OPTIONAL=1`. |
+| `DEVSETUP_INSTALL_OPTIONAL=1` | Com nao interativo, instala apps opcionais (casks no macOS; snap/.deb no Linux quando disponivel). |
 
 ## O que e instalado
 
@@ -24,7 +44,9 @@ cd ~/.dev-setup && ./bootstrap/install.sh
 | **nvm** | Gerenciador de versoes do Node.js (troca automatica via `.nvmrc`) |
 | **direnv** | Carrega variaveis de ambiente automaticamente por diretorio |
 
-### Aplicacoes
+No Linux, **eza** e **zoxide** dependem do que o `apt` da sua versao oferece; se nao houver pacote, o setup apenas avisa (e o `check` marca aviso, nao falha critica).
+
+### Aplicacoes (macOS)
 
 | App | Para que serve |
 |-----|----------------|
@@ -36,6 +58,15 @@ cd ~/.dev-setup && ./bootstrap/install.sh
 | **VS Code** | Editor de codigo |
 | **Docker Desktop** | Containers para servicos locais |
 
+### Aplicacoes (Linux)
+
+| App | Para que serve |
+|-----|----------------|
+| **Slack** | Via `snap` quando disponivel |
+| **VS Code** | Pacote `code` (repositorio Microsoft) |
+| **Docker Engine** | `docker-ce` + plugin Compose (repositorio Docker) — nao e Docker Desktop |
+| **Claude Desktop / OpenVPN Connect** | Nao automatizados nesta versao; use o cliente indicado pela infra |
+
 ### Aplicacoes opcionais (pergunta antes)
 
 | App | Para que serve |
@@ -44,6 +75,8 @@ cd ~/.dev-setup && ./bootstrap/install.sh
 | **MongoDB Compass** | GUI para bancos MongoDB |
 | **Redis Insight** | GUI para instancias Redis |
 | **Postman** | Teste de APIs |
+
+No Linux, opcionais usam principalmente **snap** (e Chrome via `.deb` em amd64 quando selecionado).
 
 ## Pos-instalacao
 
@@ -73,17 +106,19 @@ source ~/.zshrc.local
 
 ### OpenVPN
 
-1. Solicite seu perfil `.ovpn` ao time de infra
-2. Abra o OpenVPN Connect
-3. Importe o arquivo `.ovpn`
+**macOS:** solicite o `.ovpn`, abra o OpenVPN Connect e importe o perfil.
+
+**Linux:** depende do padrao da empresa (NetworkManager, `openvpn3`, etc.); o README do time de infra deve ser seguido.
 
 ### Docker
 
-O setup inicia o Docker Desktop automaticamente. Se precisar reiniciar:
+**macOS:** o setup tenta abrir o Docker Desktop. Para reiniciar:
 
 ```bash
 open -a Docker
 ```
+
+**Linux:** o usuario e adicionado ao grupo `docker`; em geral e preciso **logout/login** (ou novo shell) para `docker` sem `sudo`. Servico: `sudo systemctl status docker`.
 
 ## Customizacoes pessoais
 
@@ -105,7 +140,7 @@ Para verificar se tudo esta configurado:
 ~/.dev-setup/bootstrap/check.sh
 ```
 
-Relatorio salvo em `~/.dev-setup/logs/check-result.json`.
+Requer **jq** instalado (gera JSON com strings escapadas corretamente). Relatorio: `~/.dev-setup/logs/check-result.json`.
 
 ## Estrutura
 
@@ -114,11 +149,17 @@ dev-setup/
   install.sh           # Entrypoint (curl | bash)
   VERSION              # Versao semver
   lib/common.sh        # Logging e utils
+  packages/
+    linux/
+      ubuntu-packages.txt   # Lista apt base (Linux)
   bootstrap/
-    install.sh         # Orquestrador
+    install.sh         # Orquestrador (macOS / Linux)
     macos.sh           # Setup macOS
-    Brewfile           # Pacotes Homebrew
+    linux.sh           # Detecta distro Linux
+    linux-ubuntu.sh    # Setup Ubuntu/Debian
+    Brewfile           # Pacotes Homebrew (macOS)
     check.sh           # Validacao
+    check-lib.sh       # Helpers do check + JSON (jq)
   dotfiles/zsh/
     .zshrc             # Config do shell
     aliases.zsh        # Atalhos do time
