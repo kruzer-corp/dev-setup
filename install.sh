@@ -13,8 +13,22 @@ fi
 set -euo pipefail
 
 REPO="https://github.com/kruzer-corp/dev-setup"
-DEST="$HOME/.dev-setup"
 VERSION="${DEVSETUP_VERSION:-latest}"
+
+# Com "sudo bash install.sh", HOME=/root — instala na conta que invocou sudo (evita permission denied depois)
+if [ "$(id -u)" -eq 0 ] && [ -n "${SUDO_USER:-}" ]; then
+  _target_home="$(getent passwd "$SUDO_USER" | cut -d: -f6)"
+  if [ -n "$_target_home" ] && [ -d "$_target_home" ]; then
+    DEST="$_target_home/.dev-setup"
+    echo "(sudo) Instalando em $DEST para o usuario $SUDO_USER (nao em /root)."
+  else
+    DEST="${HOME:-/root}/.dev-setup"
+    echo "Aviso: nao achei home de \$SUDO_USER; usando $DEST" >&2
+  fi
+else
+  DEST="$HOME/.dev-setup"
+fi
+unset _target_home
 
 _apt_run() {
   if [ "$(id -u)" -eq 0 ]; then
@@ -123,11 +137,23 @@ if ! download_tarball "$DOWNLOAD_URL" | tar -xz --strip-components=1 -C "$DEST";
   exit 1
 fi
 
+# Scripts executaveis (GitHub tarball as vezes vem sem bit +x)
+find "$DEST" -type f -name "*.sh" -exec chmod +x {} + 2>/dev/null || true
+
+# Dono da pasta: se extraiu como root para outro usuario, sem isso da "Permission denied" no proximo passo
+if [ "$(id -u)" -eq 0 ] && [ -n "${SUDO_USER:-}" ]; then
+  chown -R "$SUDO_USER:" "$DEST"
+fi
+
 echo ""
 echo "Instalado em $DEST"
 INSTALLED_VERSION="$(cat "$DEST/VERSION" 2>/dev/null || echo "unknown")"
 echo "Versao: $INSTALLED_VERSION"
 echo ""
-echo "Proximo passo:"
+echo "Proximo passo (rode como seu usuario normal, sem sudo):"
 echo "  cd $DEST && bash bootstrap/install.sh"
 echo ""
+if [ "$(id -u)" -eq 0 ] && [ -z "${SUDO_USER:-}" ]; then
+  echo "Aviso: voce rodou como root sem sudo. Os arquivos ficaram em $DEST (root)." >&2
+  echo "  Para o dia a dia, prefira: bash install.sh   (sem sudo)" >&2
+fi
