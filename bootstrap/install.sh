@@ -1,6 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # bootstrap/install.sh - Orquestrador principal do dev-setup
 # Detecta o OS e executa o setup apropriado.
+# Requer bash (nao use "sh" — dash nao suporta pipefail).
+
+if [ -z "${BASH_VERSION:-}" ]; then
+  exec /usr/bin/env bash "$0" "$@"
+fi
 
 set -uo pipefail
 

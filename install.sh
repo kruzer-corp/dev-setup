@@ -1,7 +1,14 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # install.sh - Entrypoint remoto do dev-setup
 # Uso: curl -fsSL https://raw.githubusercontent.com/kruzer-corp/dev-setup/main/install.sh | bash
 # Uso com versao: DEVSETUP_VERSION=1.2.0 curl -fsSL ... | bash
+#
+# Nao use "sh install.sh": no Ubuntu /bin/sh e dash e nao suporta "set -o pipefail".
+# Use: bash install.sh   ou   chmod +x install.sh && ./install.sh
+
+if [ -z "${BASH_VERSION:-}" ]; then
+  exec /usr/bin/env bash "$0" "$@"
+fi
 
 set -euo pipefail
 
